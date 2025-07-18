@@ -2,8 +2,9 @@
 
 /**
  * _printf - Produces output according to a format
- * @format: Format string containing the characters and specifiers
- * Return: Number of characters printed (excluding the null byte)
+ * @format: Format string
+ *
+ * Return: Number of characters printed (excluding null byte)
  */
 int _printf(const char *format, ...)
 {
@@ -11,10 +12,11 @@ int _printf(const char *format, ...)
 	int i = 0, count = 0;
 	char *str;
 
-	if (!format)
+	if (format == NULL)
 		return (-1);
 
 	va_start(args, format);
+
 	while (format[i])
 	{
 		if (format[i] == '%' && format[i + 1])
@@ -29,12 +31,11 @@ int _printf(const char *format, ...)
 			else if (format[i] == 's')
 			{
 				str = va_arg(args, char *);
-				if (!str)
+				if (str == NULL)
 					str = "(null)";
 				while (*str)
 				{
-					write(1, str, 1);
-					str++;
+					write(1, str++, 1);
 					count++;
 				}
 			}
@@ -57,6 +58,7 @@ int _printf(const char *format, ...)
 		}
 		i++;
 	}
+
 	va_end(args);
 	return (count);
 }
