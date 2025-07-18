@@ -1,21 +1,20 @@
 #include "main.h"
 #include <stdarg.h>
-#include <unistd.h>
+#include <stddef.h>  /* For NULL */
+#include <unistd.h>  /* For write */
+#include "main.h"
 
 /**
- * _printf - Produces output according to a format.
- * @format: A character string composed of zero or more directives.
- *
- * Return: The number of characters printed (excluding the null byte).
+ * _printf - Custom printf function handling %c, %s, and %%
+ * @format: The format string
+ * Return: Number of characters printed
  */
 int _printf(const char *format, ...)
 {
 	va_list args;
 	int i = 0, count = 0;
-	char *str;
-	char c;
 
-	if (format == NULL || (format[0] == '%' && format[1] == '\0'))
+	if (format == NULL)
 		return (-1);
 
 	va_start(args, format);
@@ -26,28 +25,11 @@ int _printf(const char *format, ...)
 		{
 			i++;
 			if (format[i] == 'c')
-			{
-				c = va_arg(args, int);
-				write(1, &c, 1);
-				count++;
-			}
+				count += print_char(args);
 			else if (format[i] == 's')
-			{
-				str = va_arg(args, char *);
-				if (str == NULL)
-					str = "(null)";
-				while (*str != '\0')
-				{
-					write(1, str, 1);
-					str++;
-					count++;
-				}
-			}
+				count += print_string(args);
 			else if (format[i] == '%')
-			{
-				write(1, "%", 1);
-				count++;
-			}
+				count += print_percent();
 			else
 			{
 				write(1, "%", 1);
@@ -62,7 +44,6 @@ int _printf(const char *format, ...)
 		}
 		i++;
 	}
-
 	va_end(args);
 	return (count);
 }
