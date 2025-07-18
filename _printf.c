@@ -1,10 +1,11 @@
 #include "main.h"
 
 /**
- * _printf - Produces output according to a format
- * @format: A character string containing zero or more directives
+ * _printf - Produces output according to a format.
+ * @format: Format string containing characters and conversion specifiers.
  *
- * Return: The number of characters printed (excluding the null byte)
+ * Return: Number of characters printed (excluding the null byte).
+ *         Returns -1 if format is NULL or in case of error.
  */
 int _printf(const char *format, ...)
 {
@@ -26,7 +27,11 @@ int _printf(const char *format, ...)
 			if (format[i] == 'c')
 			{
 				c = (char)va_arg(args, int);
-				write(1, &c, 1);
+				if (write(1, &c, 1) != 1)
+				{
+					va_end(args);
+					return (-1);
+				}
 				count++;
 			}
 			else if (format[i] == 's')
@@ -36,30 +41,47 @@ int _printf(const char *format, ...)
 					str = "(null)";
 				while (*str)
 				{
-					write(1, str, 1);
+					if (write(1, str, 1) != 1)
+					{
+						va_end(args);
+						return (-1);
+					}
 					str++;
 					count++;
 				}
 			}
 			else if (format[i] == '%')
 			{
-				write(1, "%", 1);
+				if (write(1, "%", 1) != 1)
+				{
+					va_end(args);
+					return (-1);
+				}
 				count++;
 			}
 			else
 			{
-				write(1, "%", 1);
-				write(1, &format[i], 1);
+				/* Handle unknown specifiers by printing '%' and the char */
+				if (write(1, "%", 1) != 1 || write(1, &format[i], 1) != 1)
+				{
+					va_end(args);
+					return (-1);
+				}
 				count += 2;
 			}
 		}
 		else
 		{
-			write(1, &format[i], 1);
+			if (write(1, &format[i], 1) != 1)
+			{
+				va_end(args);
+				return (-1);
+			}
 			count++;
 		}
 		i++;
 	}
+
 	va_end(args);
 	return (count);
 }
