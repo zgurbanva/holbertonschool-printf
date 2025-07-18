@@ -1,18 +1,17 @@
 #include "main.h"
-#include <stdarg.h>
-#include <stddef.h>  /* For NULL */
-#include <unistd.h>  /* For write */
-#include "main.h"
 
 /**
- * _printf - Custom printf function handling %c, %s, and %%
- * @format: The format string
- * Return: Number of characters printed
+ * _printf - Produces output according to a format
+ * @format: A character string containing zero or more directives
+ *
+ * Return: The number of characters printed (excluding the null byte)
  */
 int _printf(const char *format, ...)
 {
 	va_list args;
 	int i = 0, count = 0;
+	char c;
+	char *str;
 
 	if (format == NULL)
 		return (-1);
@@ -25,11 +24,28 @@ int _printf(const char *format, ...)
 		{
 			i++;
 			if (format[i] == 'c')
-				count += print_char(args);
+			{
+				c = (char)va_arg(args, int);
+				write(1, &c, 1);
+				count++;
+			}
 			else if (format[i] == 's')
-				count += print_string(args);
+			{
+				str = va_arg(args, char *);
+				if (str == NULL)
+					str = "(null)";
+				while (*str)
+				{
+					write(1, str, 1);
+					str++;
+					count++;
+				}
+			}
 			else if (format[i] == '%')
-				count += print_percent();
+			{
+				write(1, "%", 1);
+				count++;
+			}
 			else
 			{
 				write(1, "%", 1);
