@@ -1,52 +1,68 @@
 #include "main.h"
+#include <stdarg.h>
 #include <unistd.h>
-#include <stddef.h>
 
 /**
- * _printf - simplified printf that handles %c, %s and %%
- * @format: format string
- * Return: number of characters printed, or -1 on error
+ * _printf - Produces output according to a format.
+ * @format: A character string composed of zero or more directives.
+ *
+ * Return: The number of characters printed (excluding the null byte).
  */
 int _printf(const char *format, ...)
 {
+	va_list args;
 	int i = 0, count = 0;
-	va_list ap;
+	char *str;
+	char c;
 
-	if (!format)
+	if (format == NULL || (format[0] == '%' && format[1] == '\0'))
 		return (-1);
 
-	va_start(ap, format);
+	va_start(args, format);
 
-	for (; format[i]; i++)
+	while (format[i] != '\0')
 	{
-		if (format[i] != '%')           /* ordinary char */
+		if (format[i] == '%' && format[i + 1] != '\0')
 		{
-			count += _putchar(format[i]);
-			continue;
+			i++;
+			if (format[i] == 'c')
+			{
+				c = va_arg(args, int);
+				write(1, &c, 1);
+				count++;
+			}
+			else if (format[i] == 's')
+			{
+				str = va_arg(args, char *);
+				if (str == NULL)
+					str = "(null)";
+				while (*str != '\0')
+				{
+					write(1, str, 1);
+					str++;
+					count++;
+				}
+			}
+			else if (format[i] == '%')
+			{
+				write(1, "%", 1);
+				count++;
+			}
+			else
+			{
+				write(1, "%", 1);
+				write(1, &format[i], 1);
+				count += 2;
+			}
 		}
-
-		i++;                           /* now look at specifier */
-		if (!format[i])                /* stray '%' at the end */
-			return (-1);
-
-		switch (format[i])
+		else
 		{
-		case 'c':
-			count += _putchar(va_arg(ap, int));
-			break;
-		case 's':
-			count += _puts(va_arg(ap, char *));
-			break;
-		case '%':
-			count += _putchar('%');
-			break;
-		default:                       /* unknown specifier → print verbatim */
-			count += _putchar('%');
-			count += _putchar(format[i]);
-			break;
+			write(1, &format[i], 1);
+			count++;
 		}
+		i++;
 	}
 
-	va_end(ap);
+	va_end(args);
 	return (count);
 }
