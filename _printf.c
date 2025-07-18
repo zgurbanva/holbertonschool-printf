@@ -1,37 +1,40 @@
 #include "main.h"
 
 /**
- * _printf - Produces output according to a format
- * @format: Format string
- *
- * Return: Number of characters printed (excluding null byte)
+ * _printf - produces output according to a format
+ * @format: format string
+ * Return: number of chars printed, or -1 on error
  */
 int _printf(const char *format, ...)
 {
 	va_list args;
 	int i = 0, count = 0;
-	char *str;
+	char *str, c;
 
-	if (format == NULL)
+	if (!format)
 		return (-1);
 
 	va_start(args, format);
-
 	while (format[i])
 	{
-		if (format[i] == '%' && format[i + 1])
+		if (format[i] == '%')
 		{
 			i++;
+			if (!format[i]) /* single '%' at end: error */
+			{
+				va_end(args);
+				return (-1);
+			}
 			if (format[i] == 'c')
 			{
-				char c = va_arg(args, int);
+				c = (char)va_arg(args, int);
 				write(1, &c, 1);
 				count++;
 			}
 			else if (format[i] == 's')
 			{
 				str = va_arg(args, char *);
-				if (str == NULL)
+				if (!str)
 					str = "(null)";
 				while (*str)
 				{
@@ -58,7 +61,6 @@ int _printf(const char *format, ...)
 		}
 		i++;
 	}
-
 	va_end(args);
 	return (count);
 }
