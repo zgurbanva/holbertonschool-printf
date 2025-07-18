@@ -1,76 +1,52 @@
-#include <stdarg.h>
+#include "main.h"
 #include <unistd.h>
+#include <stddef.h>
 
 /**
- * _printf - produces output according to a format
- * @format: format string containing characters and format specifiers
- *
- * Return: number of characters printed (excluding the null byte)
+ * _printf - simplified printf that handles %c, %s and %%
+ * @format: format string
+ * Return: number of characters printed, or -1 on error
  */
 int _printf(const char *format, ...)
 {
-    va_list args;
-    int count = 0;
-    char c;
-    char *str;
+	int i = 0, count = 0;
+	va_list ap;
 
-    if (format == NULL)
-        return (-1);
+	if (!format)
+		return (-1);
 
-    va_start(args, format);
+	va_start(ap, format);
 
-    while (*format)
-    {
-        if (*format == '%')
-        {
-            format++;
-            if (*format == 'c')
-            {
-                c = (char)va_arg(args, int);
-                write(1, &c, 1);
-                count++;
-            }
-            else if (*format == 's')
-            {
-                str = va_arg(args, char *);
-                if (str == NULL)
-                    str = "(null)";
-                while (*str)
-                {
-                    write(1, str, 1);
-                    str++;
-                    count++;
-                }
-            }
-            else if (*format == '%')
-            {
-                write(1, "%", 1);
-                count++;
-            }
-            else
-            {
-                /* If unknown specifier, print the % and the char */
-                write(1, "%", 1);
-                count++;
-                if (*format)
-                {
-                    write(1, format, 1);
-                    count++;
-                }
-                else
-                    /* format string ended with a '%' */
-                    break;
-            }
-            format++;
-        }
-        else
-        {
-            write(1, format, 1);
-            count++;
-            format++;
-        }
-    }
+	for (; format[i]; i++)
+	{
+		if (format[i] != '%')           /* ordinary char */
+		{
+			count += _putchar(format[i]);
+			continue;
+		}
 
-    va_end(args);
-    return (count);
+		i++;                           /* now look at specifier */
+		if (!format[i])                /* stray '%' at the end */
+			return (-1);
+
+		switch (format[i])
+		{
+		case 'c':
+			count += _putchar(va_arg(ap, int));
+			break;
+		case 's':
+			count += _puts(va_arg(ap, char *));
+			break;
+		case '%':
+			count += _putchar('%');
+			break;
+		default:                       /* unknown specifier → print verbatim */
+			count += _putchar('%');
+			count += _putchar(format[i]);
+			break;
+		}
+	}
+
+	va_end(ap);
+	return (count);
 }
