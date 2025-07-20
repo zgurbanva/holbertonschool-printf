@@ -1,97 +1,67 @@
 #include "main.h"
 
 /**
- * _printf - Produces output according to a format
- * @format: Format string
- * Return: Number of characters printed
+ * _printf - produces output according to a format
+ * @format: format string
+ * Return: number of chars printed, or -1 on error
  */
 int _printf(const char *format, ...)
 {
-	va_list args;
-	int i = 0, count = 0;
+        va_list args;
+        int i = 0, count = 0;
+        char *str, c;
 
-	if (!format)
-		return (-1);
+        if (!format)
+                return (-1);
 
-	va_start(args, format);
-	while (format[i])
-	{
-		if (format[i] == '%' && format[i + 1])
-		{
-			i++;
-			if (format[i] == 'c')
-				count += print_char(args);
-			else if (format[i] == 's')
-				count += print_string(args);
-			else if (format[i] == '%')
-				count += print_percent();
-			else if (format[i] == 'd' || format[i] == 'i')
-				count += print_integer(args);
-			else
-			{
-				write(1, "%", 1);
-				write(1, &format[i], 1);
-				count += 2;
-			}
-		}
-		else
-		{
-			write(1, &format[i], 1);
-			count++;
-		}
-		i++;
-	}
-	va_end(args);
-	return (count);
+        va_start(args, format);
+        while (format[i])
+        {
+                if (format[i] == '%')
+                {
+                        i++;
+                        if (!format[i]) /* single '%' at end: error */
+                        {
+                                va_end(args);
+                                return (-1);
+                        }
+                        if (format[i] == 'c')
+                        {
+                                c = (char)va_arg(args, int);
+                                write(1, &c, 1);
+                                count++;
+                        }
+                        else if (format[i] == 's')
+                        {
+                                str = va_arg(args, char *);
+                                if (!str)
+                                        str = "(null)";
+                                while (*str)
+                                {
+                                        write(1, str++, 1);
+                                        count++;
+                                }
+                        }
+                        else if (format[i] == '%')
+                        {
+                                write(1, "%", 1);
+                                count++;
+                        }
+                        else
+                        {
+                                write(1, "%", 1);
+                                write(1, &format[i], 1);
+                                count += 2;
+                        }
+                }
+                else
+                {
+                        write(1, &format[i], 1);
+                        count++;
+                }
+                i++;
+        }
+        va_end(args);
+        return (count);
 }
 
-int print_char(va_list args)
-{
-	char c = va_arg(args, int);
-
-	return (write(1, &c, 1));
-}
-
-int print_string(va_list args)
-{
-	char *s = va_arg(args, char *);
-	int len = 0;
-
-	if (!s)
-		s = "(null)";
-	while (s[len])
-		write(1, &s[len++], 1);
-	return (len);
-}
-
-int print_percent(void)
-{
-	return (write(1, "%", 1));
-}
-
-int print_integer(va_list args)
-{
-	int n = va_arg(args, int);
-	char buf[12];
-	int i = 0, count = 0;
-	unsigned int num;
-
-	if (n < 0)
-	{
-		write(1, "-", 1);
-		count++;
-		num = -n;
-	}
-	else
-		num = n;
-
-	do {
-		buf[i++] = (num % 10) + '0';
-		num /= 10;
-	} while (num);
-
-	while (i--)
-		count += write(1, &buf[i], 1);
-
-	return (count);
-}
