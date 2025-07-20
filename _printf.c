@@ -19,15 +19,34 @@ int _printf(const char *format, ...)
 	{
 		if (format[i] == '%' && format[i + 1])
 		{
-			count += handle_format(format[i + 1], args);
-			i += 2;
+			i++;
+			switch (format[i])
+			{
+				case 'c':
+					count += print_char(args);
+					break;
+				case 's':
+					count += print_string(args);
+					break;
+				case '%':
+					count += print_percent(args);
+					break;
+				case 'd':
+				case 'i':
+					count += print_integer(args);
+					break;
+				default:
+					write(1, "%", 1);
+					write(1, &format[i], 1);
+					count += 2;
+			}
 		}
 		else
 		{
 			write(1, &format[i], 1);
 			count++;
-			i++;
 		}
+		i++;
 	}
 
 	va_end(args);
